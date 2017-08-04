@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html id="ng-app" ng-controller="GController">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta http-equiv="Expires" content="-1">
+    <link href="http://static.cheok.com/ak/common/img/favicon.ico" rel="shortcut icon" type="image/x-icon">
+    <link rel="apple-touch-icon" href="http://static.cheok.com/ak/common/img/touch-icon/57.png" />
+    <link rel="apple-touch-icon" sizes="57x57" href="http://static.cheok.com/ak/common/img/touch-icon/57.png" />
+    <link rel="apple-touch-icon" sizes="72x72" href="http://static.cheok.com/ak/common/img/touch-icon/72.png" />
+    <link rel="apple-touch-icon" sizes="114x114" href="http://static.cheok.com/ak/common/img/touch-icon/114.png" />
+    <link rel="apple-touch-icon" sizes="144x144" href="http://static.cheok.com/ak/common/img/touch-icon/144.png" />
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <meta http-equiv="Pragma" content="no-cache">
+    <title>转盘</title>
+    <!-- <link href="./css/global.min.css?bust=20160428121" rel="stylesheet" /> -->
+    <link href="assets/css/truntable.min.css?bust=201604268121" rel="stylesheet" />
+</head>
+
+<body>
+    <div id="pbody" class="ks-hide" ng-controller="mainController">
+        <div class="content">
+            <div class="btn btn-0"><span>冰箱</span></div>
+            <div class="btn btn-1"><span>彩电</span></div>
+            <div class="btn btn-2"><span>微波炉</span></div>
+            <div class="btn btn-7"><span>洗碗机</span></div>
+            <div class="btn" tap-handler="start()">
+                <span>点我抽奖</span>
+            </div>
+            <div class="btn btn-3"><span>挂烫机</span></div>
+            <div class="btn btn-6"><span>空调</span></div>
+            <div class="btn btn-5"><span>电动摇椅</span></div>
+            <div class="btn btn-4"><span>台灯</span></div>
+        </div>
+    </div>
+    <!-- #pbody END -->
+    <script src="assets/lib/require/require.min.js?bust=201604281728"></script>
+    <script src="assets/js/config.min.js?bust=201604281728"></script>
+    <script>
+        require(["global"],function(){
+            require(["services/memberService"], function() {
+                var index = angular.module("index", ['global']);
+                index.controller("mainController", ["$scope", "$interval", "$location", "$rootScope", "$timeout", "btPage","memberService",
+                    function($scope, $interval, $location, $rootScope, $timeout, btPage, memberService ) {
+                  
+                        var jWrapper = $("#pbody"),
+                            index = 0 //当前停留位置
+                            prize = -1;
+                            allBtn = jWrapper.find(".btn");
+                            size = $('.btn').size();
+                            isbegin = false;
+                            times = 0,    //转动次数
+                            cycle = 50;   //转动基本次数
+                            speed = 200; //初始速度
+
+                        function run(){
+                            isbegin = true;
+                            prize = 3; //接口活动的奖品参数
+                            times ++
+                            jWrapper.find(".btn").removeClass('curr');
+                            jWrapper.find(".btn-" + index).addClass("curr");
+                            index ++ ;
+                            if (index==(size-1)){
+                               index=0; //到最后一张时，滑动回第一张  
+                            } ;
+
+                            console.log(times,cycle,prize,index)
+                            if (times > cycle +10 &&  prize == index) {
+                                clearTimeout(timer1);
+                                prize = -1;
+                                times = 0; 
+                                isbegin = false;
+                                speed = 200; //初始速度
+
+                            } else {
+                                if ( times < cycle) {
+                                   speed -= 10;
+                                } 
+                                else{
+                                    speed += 20;
+                                }
+
+
+                                if (speed < 40) {
+                                    speed = 40;
+                                }     
+
+                                console.log(speed)
+                                var timer1 = $timeout(function(){
+                                     run();
+                                },speed);    
+                            }
+
+                        }
+
+                        $scope.start = function(){
+                            // console.log($scope.perAngle,888)
+                            if (isbegin) {
+                                return;
+                            };
+                                run();
+
+                            //到达指定时间，清除
+                            // $timeout(function(){
+                            //     $interval.cancel(timer1)
+                            //     console.log("定时器1")
+                            // },1000)
+
+
+                            // var timer2 = $interval(function(){
+                            //      run();
+                            // },300); 
+
+                            // //到达指定时间，清除
+                            // $timeout(function(){
+                            //     $interval.cancel(timer2)
+                            //     console.log("定时器2")
+                            // },3000)
+
+                            // var timer3 = $interval(function(){
+                            //      run();
+                            // },500); 
+                            // //到达指定时间，清除
+                            // $timeout(function(){
+                            //     $interval.cancel(timer3)
+                            //     console.log("定时器3")
+                            // },5000)
+                        }
+
+                       
+            
+                        //清除定时
+                        $scope.$on('destroy',function(){
+                           $timeout.cancel($scope.timer);  
+                        })  
+               
+                    }
+                ]);
+
+                wv.getAppInfo(function(){
+                    angular.bootstrap(document.getElementById('ng-app'), ['index']);
+                })
+            });
+        })
+    </script>
+</body>
+
+</html>
